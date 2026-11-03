@@ -1,0 +1,47 @@
+# ml-engine/.gitignore
+# ─────────────────────────────────────────────────────────────────────────────
+# Files and directories that should NOT be committed to version control.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Python virtual environment — never commit this
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Raw collected HTML files — can be large and re-collectible
+# Comment this out if your team wants to version-control the raw data.
+data/raw/html/
+data/raw/metadata/
+
+# Keep gitkeep placeholders
+!data/raw/html/.gitkeep
+!data/raw/metadata/.gitkeep
+
+# ML model artifacts — committed separately or through model registry
+models/*.pkl
+models/*.joblib
+models/*.h5
+models/*.pt
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Environment / secrets — never commit
+.env
+*.env
+
+# Large intermediate files
+*.log
+

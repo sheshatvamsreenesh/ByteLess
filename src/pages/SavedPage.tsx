@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Library, ArrowRight, Trash2, Search, Download } from 'lucide-react';
@@ -22,4 +23,78 @@ export const SavedPage: React.FC = () => {
     {docs.length>0 && <label className="mb-5 flex items-center gap-2 px-4 py-3 bg-white/70 rounded-xl border border-neutral-300 text-xs"><Search className="w-4 h-4 text-neutral-500"/><input aria-label="Search saved content" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search saved content" className="w-full bg-transparent outline-none"/></label>}
     {loading ? <div className="rounded-2xl border-2 border-dashed border-neutral-300/80 bg-white/40 p-12 text-center my-6 text-xs text-[#7b7b7b]">Loading your saved library…</div> : visible.length===0 ? <div className="rounded-2xl border-2 border-dashed border-neutral-300/80 bg-white/40 p-12 sm:p-20 text-center flex flex-col items-center justify-center my-6"><div className="w-14 h-14 rounded-full bg-neutral-200/60 flex items-center justify-center mb-5"><Library className="w-6 h-6 text-[#111111]"/></div><h2 className="font-editorial text-3xl sm:text-4xl text-[#111111]">{docs.length?'No matching documents':'Your library is empty'}</h2><p className="mt-3 text-sm text-[#7b7b7b]">{docs.length?'Try another search.':'Converted content you save will appear here for quick access, even offline.'}</p>{!docs.length&&<Link to="/convert" className="mt-8 inline-flex items-center gap-2 bg-[#0d0d0d] text-[#f7f7f5] px-6 py-2.5 rounded-full text-xs">Convert your first page <ArrowRight className="w-3.5 h-3.5"/></Link>}</div> : <div className="space-y-3">{visible.map(doc=><div key={doc.id} className="flex items-center justify-between gap-4 rounded-2xl bg-white/70 border border-neutral-300/80 p-5"><div className="min-w-0 flex-1"><button onClick={()=>void open(doc)} className="min-w-0 text-left"><h2 className="font-editorial text-xl truncate">{doc.title}</h2><p className="mt-1 text-xs text-neutral-500 truncate">{doc.source} · Saved {new Date(doc.savedAt||doc.createdAt).toLocaleDateString()} · {doc.mode} · {doc.contentType||'document'}</p><p className="mt-2 text-xs text-neutral-600 line-clamp-2">{doc.text.slice(0,240)}</p></button><div className="mt-2 flex flex-wrap gap-x-3 text-[11px] text-neutral-500"><button onClick={()=>downloadDocumentExport(doc,'txt')} className="inline-flex items-center gap-1 underline"><Download className="w-3 h-3"/>TXT</button><button onClick={()=>downloadDocumentExport(doc,'md')} className="inline-flex items-center gap-1 underline"><Download className="w-3.5 h-3.5"/>Markdown</button></div></div><button aria-label={`Delete ${doc.title}`} onClick={()=>void remove(doc)} className="p-2 rounded-lg hover:bg-neutral-100 text-neutral-600"><Trash2 className="w-4 h-4"/></button></div>)}</div>}
   </div><footer className="mt-16 pt-6 border-t border-neutral-200 flex justify-between text-xs font-technical text-[#7b7b7b]"><span>LOCAL CACHE LIBRARY · INDEXEDDB OFFLINE STORAGE</span><span>{docs.length} DOCUMENTS STORED</span></footer></div>;
+=======
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Library, ArrowRight } from 'lucide-react';
+
+export const SavedPage: React.FC = () => {
+  return (
+    <div className="relative z-10 min-h-screen pt-32 sm:pt-36 pb-24 px-4 sm:px-8 max-w-4xl mx-auto flex flex-col justify-between select-text">
+      <div>
+        {/* Header Section */}
+        <div className="mb-10 sm:mb-14">
+          <div className="mb-3">
+            <span className="font-technical text-[11px] uppercase tracking-[0.22em] text-[#7b7b7b]">
+              PERSONAL ARCHIVE
+            </span>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <h1 className="font-editorial text-4xl sm:text-5xl text-[#111111] tracking-tight font-normal">
+                Saved Content
+              </h1>
+              <p className="mt-2 text-sm sm:text-base text-[#7b7b7b] max-w-xl leading-relaxed">
+                Your personal library of distilled web documents, cached for quick access, even offline.
+              </p>
+            </div>
+
+            {/* Real 0 Saved Documents Indicator */}
+            <div className="self-start sm:self-auto shrink-0 px-3.5 py-1.5 rounded-full border border-neutral-300/80 bg-white/70 text-xs font-technical text-[#7b7b7b]">
+              <span>0 DOCUMENTS</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Proper Clean Empty State */}
+        <div className="rounded-2xl border-2 border-dashed border-neutral-300/80 bg-white/40 p-12 sm:p-20 text-center flex flex-col items-center justify-center my-6 backdrop-blur-xs">
+          <div className="w-14 h-14 rounded-full bg-neutral-200/60 flex items-center justify-center text-neutral-600 mb-5">
+            <Library className="w-6 h-6 text-[#111111]" />
+          </div>
+
+          <h2 className="font-editorial text-3xl sm:text-4xl text-[#111111] font-normal tracking-tight">
+            Your library is empty
+          </h2>
+
+          <p className="mt-3 text-sm sm:text-base text-[#7b7b7b] max-w-md leading-relaxed">
+            Converted content you save will appear here for quick access, even offline.
+          </p>
+
+          <div className="mt-8">
+            <Link
+              to="/convert"
+              className="inline-flex items-center gap-2 bg-[#0d0d0d] hover:bg-neutral-800 text-[#f7f7f5] px-6 py-2.5 rounded-full text-xs sm:text-sm font-medium tracking-tight shadow-sm transition-colors"
+            >
+              <span>Convert your first page</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="mt-16 pt-6 border-t border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-technical text-[#7b7b7b]">
+        <span>LOCAL CACHE LIBRARY · OFFLINE STORAGE</span>
+        <div className="flex items-center gap-2">
+          <span>0 DOCUMENTS STORED</span>
+        </div>
+      </footer>
+    </div>
+  );
+>>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf
 };

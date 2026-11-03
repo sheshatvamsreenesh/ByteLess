@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 node_modules/
 .venv/
 __pycache__/
@@ -9,3 +10,26 @@ coverage/
 *.log
 .env*
 !.env.example
+=======
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Coverage
+coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+>>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf

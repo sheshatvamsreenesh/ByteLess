@@ -1,0 +1,36 @@
+# ml-engine/requirements.txt
+# ─────────────────────────────────────────────────────────────────────────────
+# Phase 2 dependencies only — dataset collection, feature extraction,
+# and dataset validation.
+#
+# Install with:
+#   pip install -r requirements.txt
+#
+# All packages below are well-maintained, beginner-friendly, and have no
+# model training code (that is Phase 3+).
+# ─────────────────────────────────────────────────────────────────────────────
+
+# HTTP requests — fetches webpages safely with redirects, retries, timeouts.
+requests>=2.31.0
+
+# urllib3 is used by requests internally; pinning ensures compatibility.
+urllib3>=2.0.0
+
+# HTML parsing — BeautifulSoup provides a simple, readable API for parsing
+# HTML and extracting elements, text, attributes, etc.
+beautifulsoup4>=4.12.0
+
+# lxml is a fast HTML/XML parser used as BeautifulSoup's backend.
+# Falls back to html.parser if lxml is unavailable.
+lxml>=5.0.0
+
+# Data manipulation — pandas provides DataFrames for reading/writing CSV files
+# and joining datasets.
+pandas>=2.0.0
+
+# Numerical operations — numpy is used for NaN handling and statistics.
+numpy>=1.24.0
+
+# YAML configuration — reads url_config.yaml in the runner scripts.
+pyyaml>=6.0.0
+

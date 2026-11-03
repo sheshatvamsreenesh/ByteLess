@@ -38,6 +38,7 @@ Frontend foundation created. Core functionality is under development.
 
    `npm run dev`
 
+<<<<<<< HEAD
 ### URL conversion backend
 
 The URL conversion interface requires the FastAPI service in `backend/`. In one terminal:
@@ -88,10 +89,16 @@ The Reader uses the browser's built-in SpeechSynthesis API and lists only voices
 
 Translation and AI summarization are unavailable because this repository has no configured provider endpoint or credentials. The installed `@google/genai` package is not wired into the application. Reader content is not sent to a translation or summarization provider. Enabling either later requires a real backend provider integration, server-side secret configuration, and clear user disclosure/consent because document text would leave the device.
 
+=======
+>>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf
 ## Project Vision
 
 Make web content accessible even on slow or limited internet connections by intelligently removing unnecessary page weight while preserving meaningful information.
 
 ---
 
+<<<<<<< HEAD
 Built with ❤️ by Team ByteLess.
+=======
+Built with ❤️ by Team ByteLess.
+>>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf

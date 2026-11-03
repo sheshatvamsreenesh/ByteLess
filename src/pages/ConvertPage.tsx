@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+<<<<<<< HEAD
 import React, { useEffect, useRef, useState } from 'react';
 import { Globe, FileText, Upload, ArrowRight, Download, Image as ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +13,12 @@ import { compressPdf, convertPdfToImages, extractPdfText, type PdfTextResult } f
 import { pdfSizeMetrics, validatePdfUpload } from '../lib/pdf';
 
 type InputMethod = 'url' | 'text' | 'html' | 'pdf';
+=======
+import React, { useState } from 'react';
+import { Globe, FileText, Upload, ArrowRight } from 'lucide-react';
+
+type InputMethod = 'url' | 'text' | 'html';
+>>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf
 
 export const ConvertPage: React.FC = () => {
   const [activeMethod, setActiveMethod] = useState<InputMethod>('url');
@@ -20,6 +27,7 @@ export const ConvertPage: React.FC = () => {
   const [stripTrackers, setStripTrackers] = useState(true);
   const [preserveHeadings, setPreserveHeadings] = useState(true);
   const [compressDOM, setCompressDOM] = useState(true);
+<<<<<<< HEAD
   const [fileContent, setFileContent] = useState('');
   const [fileName, setFileName] = useState('');
   const [htmlFile, setHtmlFile] = useState<File | null>(null);
@@ -157,6 +165,12 @@ export const ConvertPage: React.FC = () => {
     } catch (error) { setStatus(error instanceof Error ? error.message : 'Could not process this input.'); }
     finally { setBusy(false); }
   };
+=======
+
+  const hasInput =
+    activeMethod === 'url' ? urlInput.trim().length > 0 :
+    activeMethod === 'text' ? textInput.trim().length > 0 : false;
+>>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf
 
   return (
     <div className="relative z-10 min-h-screen pt-32 sm:pt-36 pb-20 px-4 sm:px-8 max-w-5xl mx-auto flex flex-col justify-between">
@@ -214,6 +228,7 @@ export const ConvertPage: React.FC = () => {
             <Upload className="w-3.5 h-3.5" />
             <span>Upload HTML</span>
           </button>
+<<<<<<< HEAD
           <button
             onClick={() => { setActiveMethod('pdf'); setStatus(''); }}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer ${activeMethod === 'pdf' ? 'bg-[#0d0d0d] text-[#f7f7f5] shadow-xs' : 'text-[#7b7b7b] hover:text-[#111111] hover:bg-neutral-100/70'}`}
@@ -221,6 +236,8 @@ export const ConvertPage: React.FC = () => {
             <FileText className="w-3.5 h-3.5" />
             <span>PDF Tools</span>
           </button>
+=======
+>>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf
         </div>
 
         {/* Workspace Body Grid */}
@@ -328,7 +345,11 @@ export const ConvertPage: React.FC = () => {
                     METHOD 03 · LOCAL FILE UPLOAD
                   </span>
                   <span className="font-technical text-xs text-[#7b7b7b]">
+<<<<<<< HEAD
                     {fileName || 'AWAITING FILE'}
+=======
+                    AWAITING FILE
+>>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf
                   </span>
                 </div>
 
@@ -342,19 +363,28 @@ export const ConvertPage: React.FC = () => {
                   <p className="mt-1 text-xs text-[#7b7b7b] max-w-sm">
                     Drag and drop your saved .html, .htm, or .mhtml archive files here to extract clean reading text.
                   </p>
+<<<<<<< HEAD
                   <input ref={fileRef} type="file" accept=".html,.htm,.mhtml,text/html" className="hidden" onChange={async e => { const file=e.target.files?.[0]; if(!file) return; if(file.size>10*1024*1024){setStatus('Choose an HTML file smaller than 10 MB.'); return;} setHtmlFile(file); setFileName(file.name); setFileContent(await file.text()); setStatus(''); }} />
                   <button
                     type="button"
                     onClick={() => fileRef.current?.click()}
+=======
+                  <button
+                    type="button"
+>>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf
                     className="mt-4 px-4 py-2 rounded-full border border-neutral-300 text-xs font-medium text-[#111111] hover:bg-neutral-100 transition-colors cursor-pointer"
                   >
                     Select File from Device
                   </button>
+<<<<<<< HEAD
                   {htmlFile && <div className="mt-4 w-full max-w-md text-left"><label htmlFor="html-image-quality" className="flex items-center justify-between gap-3 text-xs text-neutral-700"><span>Embedded JPEG/WebP quality</span><span className="font-technical">{compressionQuality} / 95</span></label><input id="html-image-quality" type="range" min="1" max="95" value={compressionQuality} onChange={e=>setCompressionQuality(Number(e.target.value))} className="mt-2 w-full accent-neutral-900"/><p className="mt-1 text-[11px] text-[#7b7b7b]">Only embedded PNG, JPEG, and WebP images are considered. Remote image URLs are preserved and never fetched for optimization.</p></div>}
+=======
+>>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf
                 </div>
               </div>
             )}
 
+<<<<<<< HEAD
             {activeMethod === 'pdf' && (
               <div>
                 <div className="flex items-center justify-between pb-3 mb-6 border-b border-neutral-200">
@@ -393,6 +423,8 @@ export const ConvertPage: React.FC = () => {
               </div>
             )}
 
+=======
+>>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf
             {/* Action Row */}
             <div className="pt-6 mt-6 border-t border-neutral-200 flex items-center justify-between">
               <span className="text-xs text-[#7b7b7b] font-technical">
@@ -400,19 +432,31 @@ export const ConvertPage: React.FC = () => {
               </span>
               <button
                 type="button"
+<<<<<<< HEAD
                 disabled={!hasInput || busy}
                 onClick={processInput}
                 className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs sm:text-sm font-medium tracking-tight shadow-sm transition-colors ${
                   hasInput
+=======
+                disabled={!hasInput && activeMethod !== 'html'}
+                className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs sm:text-sm font-medium tracking-tight shadow-sm transition-colors ${
+                  hasInput || activeMethod === 'html'
+>>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf
                     ? 'bg-[#0d0d0d] hover:bg-neutral-800 text-[#f7f7f5] cursor-pointer'
                     : 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
                 }`}
               >
                 <span>
+<<<<<<< HEAD
                   {busy ? 'Processing…' : activeMethod === 'url' && 'Distill Webpage'}
                   {!busy && activeMethod === 'text' && 'Purify Text'}
                   {!busy && activeMethod === 'html' && 'Process Document'}
                   {!busy && activeMethod === 'pdf' && 'Extract PDF Text'}
+=======
+                  {activeMethod === 'url' && 'Distill Webpage'}
+                  {activeMethod === 'text' && 'Purify Text'}
+                  {activeMethod === 'html' && 'Process Document'}
+>>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf
                 </span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -453,6 +497,7 @@ export const ConvertPage: React.FC = () => {
               </div>
 
               <div className="p-3.5 rounded-xl bg-neutral-100/70 border border-neutral-200/80 text-[11px] text-[#7b7b7b] leading-relaxed">
+<<<<<<< HEAD
                 URL conversions use the configured ByteLess backend. Savings measure the fetched HTML response and converted document.
               </div>
               <div className="pt-4 border-t border-neutral-200 space-y-2">
@@ -460,6 +505,10 @@ export const ConvertPage: React.FC = () => {
                 {(['light','ultra','terminal'] as DeliveryMode[]).map(item => <label key={item} className="flex items-center gap-2 text-xs text-neutral-700 capitalize cursor-pointer"><input type="radio" name="delivery-mode" checked={mode===item} onChange={()=>setMode(item)} className="accent-neutral-900" />{item} Mode</label>)}
               </div>
               {status && <p role="status" className="text-xs text-amber-800 leading-relaxed">{status}</p>}
+=======
+                Connectors initialized in preview mode. Provide source content to begin conversion.
+              </div>
+>>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf
             </div>
 
             <div className="pt-4 border-t border-neutral-200 text-center">
