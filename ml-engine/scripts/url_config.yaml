@@ -1,0 +1,184 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# ByteLess Adaptive Intelligence Engine — URL Collection Configuration
+# File: ml-engine/scripts/url_config.yaml
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# HOW TO USE THIS FILE
+# ════════════════════
+# 1. For each page you want to collect, add an entry under `pages:`.
+# 2. Fill in the `url`, `category`, and `notes` fields.
+# 3. Set `approved: true` ONLY after you have personally verified that:
+#       a. The page is publicly accessible (no login required).
+#       b. You have read the site's robots.txt and terms of service.
+#       c. The page content is suitable for an educational ML dataset.
+# 4. Leave `approved: false` for any URL you have not reviewed yet.
+#    The collection script will SKIP all unapproved entries.
+#
+# IMPORTANT RULES
+# ═══════════════
+# - Do NOT set approved: true for paywalled, login-required, or private pages.
+# - Do NOT invent or guess URLs — every entry must be a real page you visited.
+# - Do NOT include pages that explicitly forbid crawling in their robots.txt
+#   unless you have obtained explicit written permission.
+# - Do NOT include API endpoints, file downloads, or non-HTML pages.
+# - Rate limits: the collector already waits between requests.
+#   Do not add the same domain more than ~3–4 times in a single run.
+#
+# CATEGORY OPTIONS
+# ════════════════
+# Use exactly one of the following strings (case-sensitive):
+#   news_and_articles
+#   ecommerce
+#   technical_documentation
+#   educational_content
+#   government_and_public_services
+#   forums_and_reference
+#
+# APPROVAL STATUS OPTIONS
+# ═══════════════════════
+#   approved: false   → URL not yet reviewed; will be SKIPPED by collector
+#   approved: true    → URL reviewed and cleared for collection
+#
+# SUGGESTED ALLOCATION (fill in your own real URLs below)
+# ════════════════════════════════════════════════════════
+# Category                      | Target count
+# ──────────────────────────────┼─────────────
+# news_and_articles             |  4
+# ecommerce                     |  3
+# technical_documentation       |  4
+# educational_content           |  4
+# government_and_public_services|  3
+# forums_and_reference          |  2
+# ──────────────────────────────┼─────────────
+# TOTAL                         | 20
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
+pages:
+
+  # ── NEWS AND ARTICLES (target: 4) ─────────────────────────────────────────
+  # Add up to 4 news article URLs here.
+  # Good candidates: BBC News, Reuters, The Guardian, AP News,
+  # Wikipedia current-events pages, etc.  Check each site's robots.txt first.
+
+  - url: ""                        # ← Paste the full URL here (https://...)
+    category: news_and_articles
+    approved: false                # ← Change to true after YOUR review
+    notes: ""                      # ← e.g. "BBC News article, robots.txt checked 2026-11-03"
+
+  - url: ""
+    category: news_and_articles
+    approved: false
+    notes: ""
+
+  - url: ""
+    category: news_and_articles
+    approved: false
+    notes: ""
+
+  - url: ""
+    category: news_and_articles
+    approved: false
+    notes: ""
+
+  # ── E-COMMERCE (target: 3) ─────────────────────────────────────────────────
+  # Use publicly browsable product or category pages.
+  # Avoid any page behind a login or regional restriction.
+  # Good candidates: publicly accessible product listing pages on major retailers.
+
+  - url: ""
+    category: ecommerce
+    approved: false
+    notes: ""
+
+  - url: ""
+    category: ecommerce
+    approved: false
+    notes: ""
+
+  - url: ""
+    category: ecommerce
+    approved: false
+    notes: ""
+
+  # ── TECHNICAL DOCUMENTATION (target: 4) ───────────────────────────────────
+  # Good candidates: MDN Web Docs, Python docs (docs.python.org),
+  # Read the Docs projects, Linux man page mirrors, etc.
+
+  - url: ""
+    category: technical_documentation
+    approved: false
+    notes: ""
+
+  - url: ""
+    category: technical_documentation
+    approved: false
+    notes: ""
+
+  - url: ""
+    category: technical_documentation
+    approved: false
+    notes: ""
+
+  - url: ""
+    category: technical_documentation
+    approved: false
+    notes: ""
+
+  # ── EDUCATIONAL CONTENT (target: 4) ───────────────────────────────────────
+  # Good candidates: Khan Academy, Wikipedia article pages,
+  # OpenStax textbook pages, MIT OpenCourseWare public pages.
+
+  - url: ""
+    category: educational_content
+    approved: false
+    notes: ""
+
+  - url: ""
+    category: educational_content
+    approved: false
+    notes: ""
+
+  - url: ""
+    category: educational_content
+    approved: false
+    notes: ""
+
+  - url: ""
+    category: educational_content
+    approved: false
+    notes: ""
+
+  # ── GOVERNMENT AND PUBLIC SERVICES (target: 3) ────────────────────────────
+  # Good candidates: government information portals, public health pages,
+  # official national statistics pages.  These are almost always open.
+
+  - url: ""
+    category: government_and_public_services
+    approved: false
+    notes: ""
+
+  - url: ""
+    category: government_and_public_services
+    approved: false
+    notes: ""
+
+  - url: ""
+    category: government_and_public_services
+    approved: false
+    notes: ""
+
+  # ── FORUMS AND REFERENCE (target: 2) ──────────────────────────────────────
+  # Good candidates: Stack Overflow question pages (public),
+  # Wikipedia reference pages, Reddit public threads (check ToS carefully).
+
+  - url: ""
+    category: forums_and_reference
+    approved: false
+    notes: ""
+
+  - url: ""
+    category: forums_and_reference
+    approved: false
+    notes: ""
+
