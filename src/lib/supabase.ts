@@ -1,8 +1,11 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const projectUrl = import.meta.env.VITE_SUPABASE_URL?.trim() ?? '';
-const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() ?? '';
+const environment = (import.meta as ImportMeta & {
+  env?: Record<string, string | undefined>;
+}).env || {};
+const projectUrl = environment.VITE_SUPABASE_URL?.trim() ?? '';
+const publishableKey = environment.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() ?? '';
 
 const validProjectUrl = (() => {
   if (!projectUrl) return false;

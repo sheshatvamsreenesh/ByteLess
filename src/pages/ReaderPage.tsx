@@ -73,11 +73,21 @@ export const ReaderPage: React.FC = () => {
     let alive = true;
     getActiveDocument()
       .then((value) => {
-        if (alive && value) {
-          setDoc(value);
-          setOriginalHtml(value.html);
-          setCurrentHtml(value.html);
+        if (!alive) return;
+        if (!value) return;
+        const parsed = new DOMParser().parseFromString(value.html || '', 'text/html');
+        const readableText = value.text?.trim() || parsed.body.textContent?.trim() || '';
+        if (!readableText) {
+          setDoc(null);
+          setOriginalHtml('');
+          setCurrentHtml('');
+          setMessage('This document has no readable text. Return to Convert and extract or convert its content again.');
+          return;
         }
+        const readyDocument = { ...value, text: readableText };
+        setDoc(readyDocument);
+        setOriginalHtml(readyDocument.html);
+        setCurrentHtml(readyDocument.html);
       })
       .catch((error) => {
         if (alive) setMessage(error instanceof Error ? error.message : 'Could not load document.');
@@ -88,6 +98,19 @@ export const ReaderPage: React.FC = () => {
     return () => {
       alive = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const onSyncWarning = (event: Event) => {
+      const detail = (event as CustomEvent<{ documentId: string; warning: string }>).detail;
+      if (!detail?.warning) return;
+      setDoc((current) => current?.id === detail.documentId
+        ? { ...current, warnings: [...(current.warnings || []), detail.warning] }
+        : current);
+      setMessage(detail.warning);
+    };
+    window.addEventListener('byteless:document-sync-warning', onSyncWarning);
+    return () => window.removeEventListener('byteless:document-sync-warning', onSyncWarning);
   }, []);
 
   // Track scroll progress

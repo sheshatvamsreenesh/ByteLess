@@ -91,11 +91,24 @@ export const ConvertPage: React.FC = () => {
 
   const activateDocument = async (doc: Awaited<ReturnType<typeof convertHtml>>) => {
     await setActiveDocument(doc);
-    const syncWarning = await syncConvertedDocument(doc);
-    if (syncWarning) {
-      doc.warnings = [...(doc.warnings || []), syncWarning];
-      await setActiveDocument(doc);
-    }
+    // Reader navigation depends on the local IndexedDB write, never on network sync.
+    void syncConvertedDocument(doc).then(async (syncWarning) => {
+      if (!syncWarning) return;
+      const updatedDocument = { ...doc, warnings: [...(doc.warnings || []), syncWarning] };
+      try {
+        await setActiveDocument(updatedDocument);
+      } catch { /* Local Reader activation has already succeeded. */ }
+      window.dispatchEvent(new CustomEvent('byteless:document-sync-warning', {
+        detail: { documentId: doc.id, warning: syncWarning },
+      }));
+    }).catch((error) => {
+      window.dispatchEvent(new CustomEvent('byteless:document-sync-warning', {
+        detail: {
+          documentId: doc.id,
+          warning: error instanceof Error ? error.message : 'Cloud history sync failed. Your local document remains available.',
+        },
+      }));
+    });
   };
 
   // Clean up object URLs on unmount
@@ -333,30 +346,53 @@ export const ConvertPage: React.FC = () => {
   };
 
   const openExtractedText = async () => {
-    if (!pdfTextResult || !pdfFile) return;
-    const escaped = (value: string) =>
-      value.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
-    const html = `<html><head><title>${escaped(pdfTextResult.title)}</title></head><body><article>${pdfTextResult.text
-      .split(/\n\s*\n/)
-      .map((p) => `<p>${escaped(p).replace(/\n/g, '<br>')}</p>`)
-      .join('')}</article></body></html>`;
-    const doc = convertHtml(html, pdfFile.name, mode, pdfTextResult.text);
-    doc.title = pdfTextResult.title;
-    doc.originalBytes = pdfTextResult.originalBytes;
-    doc.convertedBytes = pdfTextResult.convertedBytes;
-    doc.warnings = pdfTextResult.warnings;
-    doc.measurementScope = pdfTextResult.measurementScope;
-    if (doc.metrics) {
-      doc.metrics = {
-        ...doc.metrics,
-        ...pdfTextResult.imageMetrics,
-        ...pdfTextResult.scriptMetrics,
-        processingDetails: pdfTextResult.processingDetails,
-        measurementScope: pdfTextResult.measurementScope,
-      };
+    if (!pdfTextResult) {
+      setStatus('Extract the PDF text first, then open it in Reader.');
+      return;
     }
-    await activateDocument(doc);
-    navigate('/reader');
+    if (!pdfFile) {
+      setStatus('The source PDF is no longer selected. Select it and extract the text again.');
+      return;
+    }
+    const extractedText = pdfTextResult.text.trim();
+    if (!extractedText) {
+      setStatus('No readable text is available. Extract text from a PDF with selectable text first.');
+      return;
+    }
+
+    setBusy(true);
+    setStatus('Opening extracted PDF text in Reader…');
+    try {
+      const escaped = (value: string) =>
+        value.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+      const html = `<html><head><title>${escaped(pdfTextResult.title)}</title></head><body><article>${extractedText
+        .split(/\n\s*\n/)
+        .map((paragraph) => `<p>${escaped(paragraph).replace(/\n/g, '<br>')}</p>`)
+        .join('')}</article></body></html>`;
+      const doc = convertHtml(html, pdfFile.name, mode, extractedText);
+      doc.title = pdfTextResult.title.trim() || pdfFile.name.replace(/\.pdf$/i, '') || 'PDF document';
+      // Preserve the extractor's exact text for Reader copy, search, and speech controls.
+      doc.text = extractedText;
+      doc.originalBytes = pdfTextResult.originalBytes;
+      doc.convertedBytes = pdfTextResult.convertedBytes;
+      doc.warnings = pdfTextResult.warnings;
+      doc.measurementScope = pdfTextResult.measurementScope;
+      if (doc.metrics) {
+        doc.metrics = {
+          ...doc.metrics,
+          ...pdfTextResult.imageMetrics,
+          ...pdfTextResult.scriptMetrics,
+          processingDetails: pdfTextResult.processingDetails,
+          measurementScope: pdfTextResult.measurementScope,
+        };
+      }
+      await activateDocument(doc);
+      navigate('/reader');
+    } catch (error) {
+      setStatus(error instanceof Error ? `Could not open the extracted PDF text: ${error.message}` : 'Could not open the extracted PDF text.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   const processInput = async () => {
@@ -934,10 +970,11 @@ export const ConvertPage: React.FC = () => {
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
                         type="button"
+                        disabled={busy}
                         onClick={openExtractedText}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#0d0d0d] text-[#f7f7f5] text-xs font-medium"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#0d0d0d] text-[#f7f7f5] text-xs font-medium disabled:opacity-50"
                       >
-                        Open in Reader <ArrowRight className="w-3 h-3" />
+                        {busy ? 'Opening…' : 'Open in Reader'} <ArrowRight className="w-3 h-3" />
                       </button>
                       {pdfTextUrl && (
                         <a
