@@ -759,16 +759,16 @@ export const ReaderPage: React.FC = () => {
                   TRACKERS · {doc.metrics.trackersDetected} detected · {doc.metrics.trackersRemoved} references removed
                 </p>
                 <p className="text-[10px]">
-                  ESTIMATED LOADING TIME (2G @ 250 Kbps): ~
-                  {Math.max(0.1, (doc.convertedBytes * 8) / (250 * 1024)).toFixed(2)}s (vs ~
-                  {Math.max(0.1, (doc.originalBytes * 8) / (250 * 1024)).toFixed(2)}s source document)
+                  ESTIMATE · DOCUMENT PAYLOAD ONLY · Assumes 250 Kbps throughput and 300 ms round-trip latency: ~
+                  {(0.3 + Math.max(0.1, (doc.convertedBytes * 8) / (250 * 1024))).toFixed(2)}s (source document ~
+                  {(0.3 + Math.max(0.1, (doc.originalBytes * 8) / (250 * 1024))).toFixed(2)}s)
                 </p>
               </>
             ) : (
               <p>Image, script, and tracker counts were not recorded for this legacy document.</p>
             )}
             <p className="text-[10px]">
-              SCOPE: Measured against HTML document payload bytes; excludes third-party subresources and network compression.
+              SCOPE: Byte sizes are measured against document payloads. Transfer times are estimates, not measurements; they exclude third-party subresources, headers, and network compression.
             </p>
             {doc.warnings?.map((warning, index) => (
               <p key={`warning-${index}`} className="text-amber-800">

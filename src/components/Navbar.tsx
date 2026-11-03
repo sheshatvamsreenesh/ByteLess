@@ -5,6 +5,8 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { UserRound } from 'lucide-react';
+import { useAuth } from '../lib/auth';
 
 export const ByteLessLogo: React.FC<{ className?: string }> = ({ className = 'w-5.5 h-5.5' }) => (
   <svg
@@ -29,6 +31,7 @@ const NAV_ITEMS = [
 ];
 
 export const Navbar: React.FC = () => {
+  const { user } = useAuth();
   return (
     <header className="fixed top-0 left-0 right-0 z-40 px-5 sm:px-10 lg:px-16 py-5 sm:py-6 md:py-7 flex items-center justify-between pointer-events-auto bg-[#f7f7f5]/90 backdrop-blur-md border-b border-neutral-200/70 transition-all duration-200">
       {/* Left: ByteLess Brand & Logo (Larger, more substantial visual presence) */}
@@ -66,6 +69,9 @@ export const Navbar: React.FC = () => {
             {item.label}
           </NavLink>
         ))}
+        <NavLink to="/account" aria-label={user ? `Account: ${user.email || 'signed in'}` : 'Account and sign in'} title={user?.email || 'Account'} className={({ isActive }) => `ml-1 flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200 ${isActive ? 'bg-[#0d0d0d] text-[#f7f7f5]' : 'text-[#7b7b7b] hover:bg-neutral-100/90 hover:text-[#111111]'}`}>
+          <UserRound className="h-4 w-4" aria-hidden="true" />
+        </NavLink>
       </nav>
     </header>
   );

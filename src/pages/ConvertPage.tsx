@@ -36,6 +36,7 @@ import {
   type PdfInfoResult,
 } from '../lib/pdfApi';
 import { pdfSizeMetrics, validatePdfUpload } from '../lib/pdf';
+import { syncConvertedDocument } from '../lib/cloudHistory';
 
 type InputMethod = 'url' | 'text' | 'html' | 'pdf';
 
@@ -87,6 +88,15 @@ export const ConvertPage: React.FC = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const pdfRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+
+  const activateDocument = async (doc: Awaited<ReturnType<typeof convertHtml>>) => {
+    await setActiveDocument(doc);
+    const syncWarning = await syncConvertedDocument(doc);
+    if (syncWarning) {
+      doc.warnings = [...(doc.warnings || []), syncWarning];
+      await setActiveDocument(doc);
+    }
+  };
 
   // Clean up object URLs on unmount
   useEffect(() => () => {
@@ -345,7 +355,7 @@ export const ConvertPage: React.FC = () => {
         measurementScope: pdfTextResult.measurementScope,
       };
     }
-    await setActiveDocument(doc);
+    await activateDocument(doc);
     navigate('/reader');
   };
 
@@ -375,7 +385,7 @@ export const ConvertPage: React.FC = () => {
         const result = await convertUrl(parsed.href, mode);
         const doc = documentFromRemote(result);
         if (!doc.text) throw new Error('No readable article content was extracted.');
-        await setActiveDocument(doc);
+        await activateDocument(doc);
         navigate('/reader');
       } catch (error) {
         setStatus(error instanceof Error ? error.message : 'Could not convert this webpage.');
@@ -397,7 +407,7 @@ export const ConvertPage: React.FC = () => {
           doc = convertHtml(textInput, 'Pasted text', mode, textInput);
         }
         if (!doc.text) throw new Error('No readable content was found in pasted text.');
-        await setActiveDocument(doc);
+        await activateDocument(doc);
         navigate('/reader');
       } catch (error) {
         setStatus(error instanceof Error ? error.message : 'Could not process pasted text.');
@@ -437,7 +447,7 @@ export const ConvertPage: React.FC = () => {
         const doc = convertHtml(html, fileName || 'Uploaded document', mode, fileContent, imageReport);
         if (htmlFile) doc.originalBytes = htmlFile.size;
         if (!doc.text) throw new Error('No readable content was found in that HTML file.');
-        await setActiveDocument(doc);
+        await activateDocument(doc);
         navigate('/reader');
       } catch (error) {
         setStatus(error instanceof Error ? error.message : 'Could not process HTML file.');

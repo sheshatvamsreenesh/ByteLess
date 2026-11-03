@@ -2,133 +2,123 @@
 
 **Less data. Same knowledge.**
 
-An AI-powered low-bandwidth web content converter that transforms heavy webpages into lightweight, readable experiences while preserving essential information.
+ByteLess converts webpages and uploaded documents into lighter, readable content. It uses a React/Vite frontend, a FastAPI conversion service, local IndexedDB for offline saves, and optional Supabase accounts and cloud history.
 
-## Project Status
+## Stack
 
-Core feature implementation completed across the React frontend and FastAPI backend.
+- Frontend: React 19, TypeScript, Vite, Tailwind CSS v4
+- Backend: FastAPI, HTTPX, Readability, BeautifulSoup, PyMuPDF, Pillow
+- Optional account storage: Supabase Auth and PostgreSQL
+- ML utilities: Python collection and feature extraction under `ml-engine/`
 
-## Tech Stack
+## Run locally
 
-- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS v4, Lucide Icons, Motion
-- **Backend**: FastAPI, Uvicorn, HTTPX, Readability-lxml, BeautifulSoup4, PyMuPDF, Pillow, python-docx, pytesseract
-- **ML Engine**: Python-based dataset collection pipeline, 30-feature DOM extraction, deterministic safety & content-preservation rules
+Requirements: Node.js 18+, Python 3.10+.
 
-## Run Locally
+### FastAPI backend
 
-### Prerequisites
-- Node.js (v18+)
-- Python (3.10+)
-
-### 1. Backend Service (FastAPI)
-
-In one terminal:
+In a terminal from the repository root:
 
 ```sh
 cd backend
 python -m venv .venv
 
-# On Linux/macOS:
+# Linux/macOS
 source .venv/bin/activate
-# On Windows PowerShell:
-.\.venv\Scripts\Activate.ps1
+# Windows PowerShell: .venv\Scripts\Activate.ps1
 
 pip install -r requirements.txt
 cp .env.example .env
 uvicorn main:app --env-file .env --host 127.0.0.1 --port 8000 --reload
 ```
 
-Backend will be running at `http://127.0.0.1:8000`.
+The API runs at `http://127.0.0.1:8000`. `BYTELESS_CORS_ORIGINS` controls allowed frontend origins. `GEMINI_API_KEY` is optional and belongs only in `backend/.env`; do not put it in a `VITE_*` variable.
 
-### 2. Frontend Application (React + Vite)
+### React frontend
 
-In a second terminal:
+In a second terminal from the repository root:
 
 ```sh
-# In repository root:
+cp .env.example .env.local
 npm install
 npm run dev
 ```
 
-Frontend will be running at `http://localhost:3000`.
+Vite runs at `http://localhost:3000`. The default backend URL is `http://localhost:8000`; set `VITE_BYTELESS_API_BASE_URL` in `.env.local` if it differs. Restart Vite after changing environment variables.
 
----
+## Features
 
-## Features & Endpoints
+### Web and HTML conversion
 
-### 1. Intelligent Content Extraction & Modes
-- `POST /api/convert`: Remote URL conversion with DNS validation, private IP/SSRF blocking, Readability article extraction, and script/tracker stripping.
-- `POST /api/text/convert`: Pasted text and raw HTML normalization into semantic article structures.
-- `POST /api/html/optimize`: Optimizes embedded PNG/JPEG/WebP images in uploaded HTML files with configurable quality.
-- **Three Delivery Modes**:
-  - **Light Mode**: Full semantic article structure with optimized inline visuals.
-  - **Ultra Mode**: Text-first delivery with interactive on-demand deferred image retrieval.
-  - **Terminal Mode**: Minimalist plain text and Markdown formatting for extreme low-bandwidth scenarios.
-- **Adaptive Bandwidth Selection**: Advises users on low-bandwidth connections (2G/3G/Save-Data) using the Network Information API.
+- `POST /api/convert` fetches publicly accessible HTTP(S) pages, validates DNS and redirect destinations, extracts article content, sanitizes output, and reports document byte metrics.
+- `POST /api/text/convert` normalizes pasted text or HTML.
+- `POST /api/html/optimize` optimizes eligible embedded images in uploaded `.html` or `.htm` files.
+- Light, Ultra, and Terminal modes control the delivered article. Ultra can defer image retrieval through `GET /api/image/proxy`; remote image resources are not fetched during conversion.
+- The frontend displays a network advisory when browser network information is available. It is advisory and does not alter or measure network traffic.
 
-### 2. Deferred Image Retrieval (Ultra Mode)
-- `GET /api/image/proxy?url={url}&quality={quality}`: Secure proxy fetching deferred images on demand with SSRF defense, size checks, and WebP compression.
+The URL converter accepts HTML responses up to 5 MB and blocks localhost, private addresses, and redirects to non-public destinations. It does not execute webpage JavaScript or fetch page subresources during conversion.
 
-### 3. Complete PDF Processing Suite
-- `POST /api/pdf/info`: Returns metadata and thumbnail previews for PDF pages.
-- `POST /api/pdf/extract`: Extracts selectable text with start/end page range support and scanned document detection.
-- `POST /api/pdf/compress`: Recompresses embedded raster images at configurable quality (1–100).
-- `POST /api/pdf/images`: Exports all PDF pages as a ZIP archive of high-resolution PNGs.
-- `POST /api/pdf/edit`: Reorders, removes, and extracts selected page ranges, producing a downloadable modified PDF.
-- `POST /api/pdf/to-markdown`: Converts PDF pages to structured Markdown.
-- `POST /api/pdf/to-docx`: Converts PDF pages into editable Microsoft Word (.docx) documents.
-- **Frontend PDF Editor**: Visual thumbnail grid with page reordering, page deletion, range selection, and instant exports.
+Uploaded HTML is limited to 10 MB. Pillow optimization supports embedded static PNG, JPEG, and WebP data images only. PNG uses lossless optimization; JPEG/WebP use the selected quality (1–95), and an image is replaced only if the re-encoded data is smaller. Dimensions, alt text, title, and surrounding figure/caption are retained. Remote/relative images are not fetched or optimized. Unsupported, animated, malformed, oversized (over 5 MB per embedded image or 40 megapixels), or non-beneficial images are preserved and reported.
 
-### 4. Intelligent Reader
-- **Typography & Progress**: Adjustable font sizes, reading progress percentage, and estimated reading time.
-- **English <-> Hindi Translation** (`POST /api/translate`): Translates leaf text nodes while preserving exact HTML tags and document structure.
-- **AI Summary** (`POST /api/summarize`): Generates 3–5 bullet points using Gemini (when `GEMINI_API_KEY` is provided) or an intelligent local extractive summary fallback.
-- **Voice Reading**: Browser-based text-to-speech using the Web Speech API with play, pause, resume, stop, and voice/language selection.
-- **Theme**: Fixed warm off-white / light visual theme throughout.
+### PDF tools
 
-### 5. Content Integrity & Live Savings Scorecard
-- Real document byte measurements (original vs. converted bytes and true percentage reduction).
-- Detailed breakdown of elements preserved (headings, paragraphs, lists, tables, links, images).
-- Clear tracking of scripts removed and tracker references stripped from output (without false claims of network-level packet interception).
-- Estimated 2G load time comparisons based on measured document sizes.
+The PDF service supports files up to 20 MB and 100 pages. It provides PDF information/thumbnails, selectable text extraction with page ranges, image compression, page rendering to PNG ZIP, page reordering/deletion, Markdown export, and DOCX export. PDF text extraction does not run OCR; scanned PDFs are detected and reported. Compression creates a new download and preserves the original. PyMuPDF is offered under AGPL-3.0 or a commercial license; review that license before distributing or hosting the backend.
 
-### 6. Offline-First Saved Content
-- Persistent local storage using IndexedDB (`byteless-documents`).
-- Searchable personal library, reader integration, and export to TXT or Markdown.
-- Service worker caching for the application shell in production builds (`npm run build && npm run preview`).
+### Reader and scorecard
 
-### 7. ML Adaptive Intelligence Engine
-- `POST /api/ml/recommend`: Analyzes DOM features and recommends optimal delivery mode and actions.
-- Features hybrid adapter that switches seamlessly from deterministic safety rules to serialized model weights once Phase 3 model training completes.
+The Reader includes adjustable typography, progress and estimated reading time, browser text-to-speech, HTML/TXT/Markdown export, translation, and summary actions. Translation and summary requests use the FastAPI provider implementation. Configure `GEMINI_API_KEY` in `backend/.env` for Gemini-backed processing; the backend also provides its documented fallback behavior when no key is set. These services receive the text/HTML sent to the backend.
 
----
+The performance scorecard compares measured input and converted document bytes, including when output is larger. It reports image counts and script/tracker-like detection separately from their absence in the converted output. Tracker removal is not network blocking. The optional load-time comparison is an **estimate** based on document bytes, an assumed throughput of 250 Kbps, and an assumed 300 ms round-trip latency. It excludes third-party subresources, headers, and network compression; it is not a measured page load or network transfer. ByteLess does not claim measured bandwidth, carbon, or monetary savings.
 
-## Environment Variables
+### Offline saved content
 
-### Backend (`backend/.env`)
-- `BYTELESS_CORS_ORIGINS`: Comma-separated frontend origins (default: `http://localhost:3000,http://127.0.0.1:3000`).
-- `GEMINI_API_KEY`: (Optional) Google Gemini API key for generative summaries and translation. If unset, ByteLess falls back to local extractive summarization and web translation automatically.
-
-### Frontend (`.env.local`)
-- `VITE_BYTELESS_API_BASE_URL`: Backend API base URL (default: `http://localhost:8000`).
-
----
-
-## Testing
+Reader's save control persists documents in IndexedDB. Saved Content supports search, open, confirmed deletion, and TXT/Markdown export. Local saved documents remain available after refresh and offline; linked media may still need a connection. The production service worker caches only the app shell and built assets, not API or Supabase responses.
 
 ```sh
-# Run backend tests (Python):
-python -m unittest discover -s backend -p "test_*.py"
-
-# Run frontend tests (TypeScript):
-npx tsx --test src/lib/*.test.ts
-
-# Run TypeScript typecheck:
-npm run lint
-
-# Build production bundle:
 npm run build
+npm run preview
 ```
+
+Visit the preview online once before testing offline navigation.
+
+### Supabase accounts and cloud history
+
+Supabase is optional. Without configuration, conversion, Reader, and IndexedDB continue to work. The Account page supports email sign-up/sign-in, sign-out, persisted sessions, and display-name updates. Supabase Auth uses the official `@supabase/supabase-js` client.
+
+1. Create a Supabase project and copy its Project URL and **publishable key** from the project API settings. Put these values in the root `.env.local`:
+
+   ```dotenv
+   VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=your-sb_publishable-key
+   ```
+
+   Supabase's legacy `anon` key is also accepted. These are public client credentials. Never place a Supabase `service_role` or secret key in frontend code or `VITE_*` variables. Publishable keys are intended for browser clients; secret keys bypass RLS and must stay in trusted server environments. [Supabase API key guidance](https://supabase.com/docs/guides/getting-started/api-keys)
+
+2. Apply [`supabase/migrations/20261103000000_initial_schema.sql`](supabase/migrations/20261103000000_initial_schema.sql) in the Supabase SQL Editor, or use the CLI after `supabase init` and `supabase link --project-ref YOUR_PROJECT_REF`, then run `supabase db push`. The migration creates profiles, optimization history, file metadata, and optimization statistics tables, indexes, constraints, a profile creation trigger, and RLS policies. Policies restrict each table to the authenticated owner; file/statistics rows also have owner-matched foreign keys. Supabase recommends RLS for exposed tables and policies based on `auth.uid()`. [Supabase RLS guidance](https://supabase.com/docs/guides/database/postgres/row-level-security)
+
+3. In Supabase Authentication → URL Configuration, set the deployed site URL and add the local (`http://localhost:3000`) and deployed ByteLess URLs to the redirect allow list. Set email confirmation and password rules under Authentication → Providers to match your deployment.
+
+Cloud history sync is off by default and its preference is stored per account. On the Account page, enable future sync or explicitly sync local saved/active documents. The Saved page displays the latest 100 cloud entries separately from the offline library. Cloud history stores converted HTML/text and measured metadata; original uploaded PDF/HTML binaries stay in the browser. File metadata contains only the filename, MIME type, and byte counts. Combined converted HTML/text over 5 MB is not synced. Cloud history requires internet and is not cached offline.
+
+The FastAPI service remains stateless for account storage. The authenticated frontend writes user-specific data directly to Supabase with the user's session; PostgreSQL RLS enforces ownership. The backend does not need a Supabase service-role credential. Existing upload validation and URL SSRF protections remain in place.
+
+For deployment, set `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, and `VITE_BYTELESS_API_BASE_URL` in the frontend build environment; configure backend CORS for the deployed frontend; apply the migration; and add the production URL to Supabase Auth's redirect allow list. Never commit `.env.local`, `backend/.env`, or production secrets.
+
+## Environment files
+
+- Root `.env.example` → copy to `.env.local`; contains frontend API URL and Supabase public variable names only.
+- `backend/.env.example` → copy to `backend/.env`; contains backend CORS settings and an empty optional Gemini key.
+
+## Checks
+
+```sh
+npm run lint
+npm test
+npm run build
+python -m unittest discover -s backend -v
+```
+
+Automated tests do not contact a live Supabase project. After configuring Supabase, manually verify sign-up/email confirmation, sign-in/out, profile updates, sync, deletion, and that two test users cannot read each other's rows. `supabase test db` can be used for database policy tests when the Supabase CLI/local database is available.
 
 ---
 

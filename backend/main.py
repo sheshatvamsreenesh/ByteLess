@@ -514,7 +514,7 @@ async def convert_text(request: PastedTextRequest):
             paragraphs = [escaped]
         first_line = paragraphs[0].split("\n")[0][:100]
         doc_title = request.title or first_line or "Pasted Note"
-        article_body = "".join(f"<p>{p.replace('\n', '<br>')}</p>" for p in paragraphs)
+        article_body = "".join("<p>" + p.replace("\n", "<br>") + "</p>" for p in paragraphs)
         fragment = f"<article><h1>{doc_title}</h1>{article_body}</article>"
 
     html, removed, tracker_count, images_deferred, ads_removed = clean_content(fragment, "about:blank", mode)
