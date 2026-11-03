@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Newsreader", "Source Serif 4", Georgia, serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", Menlo, Monaco, Consolas, monospace;
+
+  --color-canvas: #f7f7f5;
+  --color-dot: #0d0d0d;
+  --color-ink: #111111;
+  --color-muted: #7b7b7b;
+}
+
+:root {
+  --bg-canvas: #f7f7f5;
+  --text-ink: #111111;
+  --text-muted: #7b7b7b;
+  --dot-color: #0d0d0d;
+}
+
+html, body {
+  background-color: #f7f7f5;
+  color: #111111;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Typography Helpers */
+.font-editorial {
+  font-family: "Newsreader", "Source Serif 4", Georgia, serif;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+}
+
+.font-technical {
+  font-family: "IBM Plex Mono", Menlo, Monaco, monospace;
+}
+
+/* Smooth transitions */
+.transition-luxury {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Custom Scrollbar for subtle feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f7f7f5;
+}
+::-webkit-scrollbar-thumb {
+  background: #dcdcd9;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b5b5b0;
+}
