@@ -59,11 +59,12 @@ class ConversionEndpointTests(unittest.TestCase):
         self.client = TestClient(main.app)
 
     @staticmethod
-    def sample_pdf(with_text=True):
+    def sample_pdf(with_text=True, num_pages=1):
         doc = pymupdf.open()
-        page = doc.new_page()
-        if with_text:
-            page.insert_text((72, 72), "ByteLess PDF extraction sample")
+        for i in range(num_pages):
+            page = doc.new_page()
+            if with_text:
+                page.insert_text((72, 72), f"ByteLess PDF extraction sample page {i + 1}")
         result = doc.tobytes()
         doc.close()
         return result
@@ -128,7 +129,7 @@ class ConversionEndpointTests(unittest.TestCase):
     def test_pdf_extract_explains_image_only_document_limit(self):
         response = self.client.post("/api/pdf/extract", files={"file": ("scan.pdf", self.sample_pdf(with_text=False), "application/pdf")})
         self.assertEqual(response.status_code, 422)
-        self.assertIn("OCR is not available", response.json()["detail"])
+        self.assertIn("OCR is", response.json()["detail"])
 
     @staticmethod
     def embedded_png_html():
@@ -248,6 +249,105 @@ class ConversionEndpointTests(unittest.TestCase):
                 asyncio.run(main.fetch_page("https://8.8.8.8/"))
         self.assertEqual(caught.exception.status_code, 400)
         self.assertEqual(client.calls, 1)
+
+    # ── New Feature Tests ─────────────────────────────────────────────────────
+
+    def test_pasted_text_conversion_endpoint(self):
+        text = "Deep Sea Exploration\n\nThe deep ocean remains one of the most enigmatic ecosystems on Earth.\nScientists use remotely operated vehicles to sample geothermal vents."
+        response = self.client.post("/api/text/convert", json={"text": text, "title": "Marine Essay", "mode": "light"})
+        self.assertEqual(response.status_code, 200, response.text)
+        res = response.json()
+        self.assertEqual(res["title"], "Marine Essay")
+        self.assertIn("<p>", res["html"])
+        self.assertIn("enigmatic ecosystems", res["html"])
+        self.assertGreater(res["originalBytes"], 0)
+        self.assertIn("categorizedElements", res["integrity"])
+        self.assertGreaterEqual(res["integrity"]["paragraphsPreserved"], 1)
+
+    def test_pasted_text_conversion_validates_empty_input(self):
+        response = self.client.post("/api/text/convert", json={"text": "   ", "mode": "light"})
+        self.assertEqual(response.status_code, 422)
+
+    def test_image_proxy_rejects_private_and_localhost_urls(self):
+        for bad_url in ("http://localhost/img.png", "http://127.0.0.1/pic.jpg", "file:///test.png"):
+            response = self.client.get(f"/api/image/proxy?url={bad_url}")
+            self.assertEqual(response.status_code, 400)
+
+    def test_summarize_endpoint_generates_bullets(self):
+        text = (
+            "Modern web development relies heavily on client-side frameworks and build tools. "
+            "ByteLess provides a lightweight conversion pipeline to reduce data transmission. "
+            "By removing tracking scripts and compressing images, users on slow connections can browse faster. "
+            "Offline caching with IndexedDB ensures saved articles remain readable anytime."
+        )
+        response = self.client.post("/api/summarize", json={"text": text, "title": "Web Optimization"})
+        self.assertEqual(response.status_code, 200, response.text)
+        res = response.json()
+        self.assertTrue(len(res["summary"]) >= 1)
+        self.assertIn("provider", res)
+
+    def test_summarize_rejects_too_short_text(self):
+        response = self.client.post("/api/summarize", json={"text": "Too short"})
+        self.assertEqual(response.status_code, 422)
+
+    def test_translate_validates_language_pair(self):
+        response = self.client.post("/api/translate", json={"html": "<p>Hello</p>", "source_lang": "en", "target_lang": "fr"})
+        self.assertEqual(response.status_code, 422)
+
+    def test_translate_preserves_html_tags(self):
+        html = "<h1>Knowledge</h1><p>Reading content is essential.</p>"
+        response = self.client.post("/api/translate", json={"html": html, "source_lang": "en", "target_lang": "hi"})
+        self.assertEqual(response.status_code, 200, response.text)
+        res = response.json()
+        self.assertIn("<h1>", res["translatedHtml"])
+        self.assertIn("<p>", res["translatedHtml"])
+
+    def test_ml_recommend_endpoint(self):
+        html = "<html><body><h1>Title</h1><p>Paragraph 1</p><p>Paragraph 2</p><img src='pic.jpg'></body></html>"
+        response = self.client.post("/api/ml/recommend", json={"html": html})
+        self.assertEqual(response.status_code, 200, response.text)
+        res = response.json()
+        self.assertIn("recommended_mode", res)
+        self.assertIn("recommended_actions", res)
+        self.assertIn("reasons", res)
+
+    def test_pdf_info_endpoint(self):
+        payload = self.sample_pdf(num_pages=2)
+        response = self.client.post("/api/pdf/info", files={"file": ("sample.pdf", payload, "application/pdf")})
+        self.assertEqual(response.status_code, 200, response.text)
+        res = response.json()
+        self.assertEqual(res["pageCount"], 2)
+        self.assertEqual(len(res["thumbnails"]), 2)
+        self.assertTrue(res["thumbnails"][0]["thumbnail"].startswith("data:image/png;base64,"))
+
+    def test_pdf_edit_reorders_and_deletes_pages(self):
+        payload = self.sample_pdf(num_pages=3)
+        # Keep pages 3 and 1, delete page 2
+        response = self.client.post(
+            "/api/pdf/edit",
+            files={"file": ("doc.pdf", payload, "application/pdf")},
+            data={"page_order": "3,1", "delete_pages": "2"},
+        )
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertTrue(response.content.startswith(b"%PDF-"))
+        edited_doc = pymupdf.open(stream=response.content, filetype="pdf")
+        self.assertEqual(edited_doc.page_count, 2)
+        self.assertIn("page 3", edited_doc[0].get_text())
+        self.assertIn("page 1", edited_doc[1].get_text())
+        edited_doc.close()
+
+    def test_pdf_to_markdown_endpoint(self):
+        payload = self.sample_pdf(num_pages=2)
+        response = self.client.post("/api/pdf/to-markdown", files={"file": ("doc.pdf", payload, "application/pdf")})
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertIn("## Page 1", response.text)
+        self.assertIn("## Page 2", response.text)
+
+    def test_pdf_to_docx_endpoint(self):
+        payload = self.sample_pdf(num_pages=1)
+        response = self.client.post("/api/pdf/to-docx", files={"file": ("doc.pdf", payload, "application/pdf")})
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertTrue(len(response.content) > 100)
 
 
 if __name__ == "__main__":

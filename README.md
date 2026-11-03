@@ -6,99 +6,130 @@ An AI-powered low-bandwidth web content converter that transforms heavy webpages
 
 ## Project Status
 
-Frontend foundation created. Core functionality is under development.
+Core feature implementation completed across the React frontend and FastAPI backend.
 
 ## Tech Stack
 
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS v4, Lucide Icons, Motion
+- **Backend**: FastAPI, Uvicorn, HTTPX, Readability-lxml, BeautifulSoup4, PyMuPDF, Pillow, python-docx, pytesseract
+- **ML Engine**: Python-based dataset collection pipeline, 30-feature DOM extraction, deterministic safety & content-preservation rules
 
 ## Run Locally
 
 ### Prerequisites
-- Node.js
+- Node.js (v18+)
+- Python (3.10+)
 
-### Installation
+### 1. Backend Service (FastAPI)
 
-1. Clone the repository:
-
-   `git clone https://github.com/sheshatvamsreenesh/ByteLess.git`
-
-2. Navigate into the project:
-
-   `cd ByteLess`
-
-3. Install dependencies:
-
-   `npm install`
-
-4. Start the development server:
-
-   `npm run dev`
-
-<<<<<<< HEAD
-### URL conversion backend
-
-The URL conversion interface requires the FastAPI service in `backend/`. In one terminal:
+In one terminal:
 
 ```sh
-python3 -m venv .venv
+cd backend
+python -m venv .venv
+
+# On Linux/macOS:
 source .venv/bin/activate
-pip install -r backend/requirements.txt
-cp backend/.env.example backend/.env
-uvicorn main:app --app-dir backend --env-file backend/.env --host 127.0.0.1 --port 8000
+# On Windows PowerShell:
+.\.venv\Scripts\Activate.ps1
+
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn main:app --env-file .env --host 127.0.0.1 --port 8000 --reload
 ```
 
-The Convert workspace also supports PDFs up to 20 MB and 100 pages: it extracts selectable text, compresses embedded images with a 1–100 JPEG quality setting, and exports page renders as PNG files in a ZIP (up to 30 pages, rendered at 120 DPI). Compression returns a new download and never replaces the source upload. Size reports use the actual source and output byte lengths. Image-only scans are previewable and can be rendered, but text extraction does not run OCR; encrypted and malformed PDFs are rejected. PDF operations use PyMuPDF, which is offered under AGPL-3.0 or a commercial license; review that licensing before distributing or deploying this backend.
+Backend will be running at `http://127.0.0.1:8000`.
 
-### Image optimization and performance reporting
+### 2. Frontend Application (React + Vite)
 
-Uploaded `.html` and `.htm` files can optimize supported **embedded static PNG, JPEG, and WebP data images** through `POST /api/html/optimize`. Install the backend requirements (including Pillow) before using it. PNG processing uses Pillow's lossless optimizer; JPEG and WebP use the selected quality (1–95) and replace an image only when the re-encoded bytes are smaller. Image dimensions and the HTML image element are retained, including its alt text, title, and surrounding figure/caption. Animated, unsupported, malformed, oversized (over 5 MB encoded image or 40 megapixels), or non-beneficial conversions are left in place and reported. HTML uploads are limited to 10 MB. The browser continues sanitization if the optimizer service is unreachable and reports that optimization was skipped.
-
-Remote and relative images are never fetched or altered by this optimizer. URL conversion leaves remote images alone and counts source images missing from extracted article HTML as omitted; Ultra and Terminal replace article images with text markers and report them as deferred. The PDF text export reports raster image objects omitted from its plain-text result; it does not count vector art. Image counts describe the converted document, not network requests.
-
-The Reader scorecard reports source and converted **document** byte sizes, actual byte difference (including when output is larger), image counts, script detection/removal, tracker-like reference detection/removal, conversion mode, and processing notes. Script removal is checked against output; tracker detection is a heuristic over recognizable resource references and inline-script text, and absence from output is checked separately. Neither indicates that network requests were blocked. Size comparisons use the input document bytes and generated Reader HTML (or, for PDF extraction, source PDF bytes and UTF-8 text bytes); they do not measure whole-page weight, subresource traffic, transfer compression, load time, bandwidth, carbon, or monetary savings. No connection-speed estimates are shown.
-
-In another terminal, configure the frontend API address (the default is already suitable for local development) and run Vite:
+In a second terminal:
 
 ```sh
-cp .env.example .env.local
+# In repository root:
+npm install
 npm run dev
 ```
 
-Set `VITE_BYTELESS_API_BASE_URL` in `.env.local` if the backend runs elsewhere. Configure `BYTELESS_CORS_ORIGINS` on the backend with the exact frontend origins permitted to call it; the defaults allow Vite on localhost:3000. `backend/.env.example` documents this setting. The endpoint fetches only public HTTP(S) HTML, pins each connection to a DNS-validated public IP, validates redirect destinations, and caps the decoded response body at 5 MB. Tracker counts are recognizable tracker-like references in the fetched HTML; scripts never execute and page subresources are not fetched, and detected tracker elements are omitted from the converted output.
-
-### Saved documents and offline use
-
-Reader's bookmark control saves the active converted document to the Saved Content library in IndexedDB. The library persists across reloads, supports search, open, and confirmed deletion, and offers TXT and Markdown downloads. Saved text remains available offline on this device; linked remote images/media may still need a connection, and converting a new webpage requires internet access. Legacy localStorage saves are migrated into IndexedDB on first library access. Storage quota and browser-storage errors are surfaced in the interface.
-
-The service worker is enabled for production builds only. To exercise offline navigation locally, build and serve the production app, visit it once while online, then switch the browser offline:
-
-```sh
-npm run build
-npm run preview
-```
-
-It pre-caches the same-origin app shell and the built `/assets/` JavaScript/CSS referenced by it. It bypasses API, cross-origin, and other requests, and skips private or `no-store` responses. The app shell must be installed online once before it can be reopened offline; external web fonts may be unavailable offline.
-
-### Reader speech, translation, and summaries
-
-The Reader uses the browser's built-in SpeechSynthesis API and lists only voices and language tags reported by the browser/operating system. Availability and playback behavior vary by browser and installed voices. ByteLess does not send text to its own speech service; the selected system voice may have its own platform-specific processing and privacy behavior.
-
-Translation and AI summarization are unavailable because this repository has no configured provider endpoint or credentials. The installed `@google/genai` package is not wired into the application. Reader content is not sent to a translation or summarization provider. Enabling either later requires a real backend provider integration, server-side secret configuration, and clear user disclosure/consent because document text would leave the device.
-
-=======
->>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf
-## Project Vision
-
-Make web content accessible even on slow or limited internet connections by intelligently removing unnecessary page weight while preserving meaningful information.
+Frontend will be running at `http://localhost:3000`.
 
 ---
 
-<<<<<<< HEAD
+## Features & Endpoints
+
+### 1. Intelligent Content Extraction & Modes
+- `POST /api/convert`: Remote URL conversion with DNS validation, private IP/SSRF blocking, Readability article extraction, and script/tracker stripping.
+- `POST /api/text/convert`: Pasted text and raw HTML normalization into semantic article structures.
+- `POST /api/html/optimize`: Optimizes embedded PNG/JPEG/WebP images in uploaded HTML files with configurable quality.
+- **Three Delivery Modes**:
+  - **Light Mode**: Full semantic article structure with optimized inline visuals.
+  - **Ultra Mode**: Text-first delivery with interactive on-demand deferred image retrieval.
+  - **Terminal Mode**: Minimalist plain text and Markdown formatting for extreme low-bandwidth scenarios.
+- **Adaptive Bandwidth Selection**: Advises users on low-bandwidth connections (2G/3G/Save-Data) using the Network Information API.
+
+### 2. Deferred Image Retrieval (Ultra Mode)
+- `GET /api/image/proxy?url={url}&quality={quality}`: Secure proxy fetching deferred images on demand with SSRF defense, size checks, and WebP compression.
+
+### 3. Complete PDF Processing Suite
+- `POST /api/pdf/info`: Returns metadata and thumbnail previews for PDF pages.
+- `POST /api/pdf/extract`: Extracts selectable text with start/end page range support and scanned document detection.
+- `POST /api/pdf/compress`: Recompresses embedded raster images at configurable quality (1–100).
+- `POST /api/pdf/images`: Exports all PDF pages as a ZIP archive of high-resolution PNGs.
+- `POST /api/pdf/edit`: Reorders, removes, and extracts selected page ranges, producing a downloadable modified PDF.
+- `POST /api/pdf/to-markdown`: Converts PDF pages to structured Markdown.
+- `POST /api/pdf/to-docx`: Converts PDF pages into editable Microsoft Word (.docx) documents.
+- **Frontend PDF Editor**: Visual thumbnail grid with page reordering, page deletion, range selection, and instant exports.
+
+### 4. Intelligent Reader
+- **Typography & Progress**: Adjustable font sizes, reading progress percentage, and estimated reading time.
+- **English <-> Hindi Translation** (`POST /api/translate`): Translates leaf text nodes while preserving exact HTML tags and document structure.
+- **AI Summary** (`POST /api/summarize`): Generates 3–5 bullet points using Gemini (when `GEMINI_API_KEY` is provided) or an intelligent local extractive summary fallback.
+- **Voice Reading**: Browser-based text-to-speech using the Web Speech API with play, pause, resume, stop, and voice/language selection.
+- **Theme**: Fixed warm off-white / light visual theme throughout.
+
+### 5. Content Integrity & Live Savings Scorecard
+- Real document byte measurements (original vs. converted bytes and true percentage reduction).
+- Detailed breakdown of elements preserved (headings, paragraphs, lists, tables, links, images).
+- Clear tracking of scripts removed and tracker references stripped from output (without false claims of network-level packet interception).
+- Estimated 2G load time comparisons based on measured document sizes.
+
+### 6. Offline-First Saved Content
+- Persistent local storage using IndexedDB (`byteless-documents`).
+- Searchable personal library, reader integration, and export to TXT or Markdown.
+- Service worker caching for the application shell in production builds (`npm run build && npm run preview`).
+
+### 7. ML Adaptive Intelligence Engine
+- `POST /api/ml/recommend`: Analyzes DOM features and recommends optimal delivery mode and actions.
+- Features hybrid adapter that switches seamlessly from deterministic safety rules to serialized model weights once Phase 3 model training completes.
+
+---
+
+## Environment Variables
+
+### Backend (`backend/.env`)
+- `BYTELESS_CORS_ORIGINS`: Comma-separated frontend origins (default: `http://localhost:3000,http://127.0.0.1:3000`).
+- `GEMINI_API_KEY`: (Optional) Google Gemini API key for generative summaries and translation. If unset, ByteLess falls back to local extractive summarization and web translation automatically.
+
+### Frontend (`.env.local`)
+- `VITE_BYTELESS_API_BASE_URL`: Backend API base URL (default: `http://localhost:8000`).
+
+---
+
+## Testing
+
+```sh
+# Run backend tests (Python):
+python -m unittest discover -s backend -p "test_*.py"
+
+# Run frontend tests (TypeScript):
+npx tsx --test src/lib/*.test.ts
+
+# Run TypeScript typecheck:
+npm run lint
+
+# Build production bundle:
+npm run build
+```
+
+---
+
 Built with ❤️ by Team ByteLess.
-=======
-Built with ❤️ by Team ByteLess.
->>>>>>> c28e13279c20d61fb6ee7689b2138e9a45240fcf
