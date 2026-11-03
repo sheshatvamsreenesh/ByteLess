@@ -102,6 +102,9 @@ const DB_NAME = 'byteless-documents';
 const DB_VERSION = 1;
 let databasePromise: Promise<IDBDatabase> | undefined;
 const safeTags = new Set([
+  // Keep the parser's document shell intact. Unwrapping <html> would try to
+  // insert both <head> and <body> as document roots and throw a hierarchy error.
+  'HTML', 'HEAD', 'BODY',
   'ARTICLE', 'MAIN', 'SECTION', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
   'P', 'UL', 'OL', 'LI', 'BLOCKQUOTE', 'PRE', 'CODE', 'TABLE', 'THEAD',
   'TBODY', 'TR', 'TH', 'TD', 'A', 'IMG', 'STRONG', 'B', 'EM', 'I',
