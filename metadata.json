@@ -1,0 +1,6 @@
+{
+  "name": "ByteLess",
+  "description": "ByteLess helps people access essential web content in a lightweight, readable format, even on slow or limited internet connections.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
